@@ -1,16 +1,26 @@
 # coding: binary
 require 'helper'
 
+=begin
+VirtualBox 上で windows disk をマウントし利用すると SEGV
+ ドライブが未対応なためあらゆる処理に失敗し、GC内の解放処理で
+ 正しく解放されずエラー
+ エラーハンドリングが不足していると思われる
+=end
+
 describe LMDB do
   let(:env) { LMDB.new(path) }
-  after     { env.close rescue nil }
+  after     {
+    env.close rescue nil
+    rmpath
+  }
 
   let(:db)  { env.database }
 
   it 'has version constants' do
-    LMDB::LIB_VERSION_MAJOR.should be_instance_of(Fixnum)
-    LMDB::LIB_VERSION_MINOR.should be_instance_of(Fixnum)
-    LMDB::LIB_VERSION_PATCH.should be_instance_of(Fixnum)
+    LMDB::LIB_VERSION_MAJOR.should be_instance_of(Integer)
+    LMDB::LIB_VERSION_MINOR.should be_instance_of(Integer)
+    LMDB::LIB_VERSION_PATCH.should be_instance_of(Integer)
     LMDB::LIB_VERSION.should be_instance_of(String)
     LMDB::VERSION.should be_instance_of(String)
   end
@@ -37,14 +47,14 @@ describe LMDB do
       end
 
       it 'accepts options' do
-        env = LMDB::Environment.new(path, :nosync => true, :mode => 0777, :maxreaders => 777, :mapsize => 111111, :maxdbs => 666)
+        env = LMDB::Environment.new(path, nosync: true, mode: 0777, maxreaders: 777, mapsize: 111111, maxdbs: 666)
         env.should be_instance_of(described_class)
         env.info[:maxreaders].should == 777
         env.info[:mapsize].should == 111111
         env.flags.should include(:nosync)
         env.close
 
-        env = LMDB::Environment.new(path, :nosync => false)
+        env = LMDB::Environment.new(path, nosync: false)
         env.flags.should_not include(:nosync)
         env.close
       end
@@ -52,22 +62,22 @@ describe LMDB do
 
     it 'should return stat' do
       stat = env.stat
-      stat[:psize].should be_instance_of(Fixnum)
-      stat[:depth].should be_instance_of(Fixnum)
-      stat[:branch_pages].should be_instance_of(Fixnum)
-      stat[:leaf_pages].should be_instance_of(Fixnum)
-      stat[:overflow_pages].should be_instance_of(Fixnum)
-      stat[:entries].should be_instance_of(Fixnum)
+      stat[:psize].should be_instance_of(Integer)
+      stat[:depth].should be_instance_of(Integer)
+      stat[:branch_pages].should be_instance_of(Integer)
+      stat[:leaf_pages].should be_instance_of(Integer)
+      stat[:overflow_pages].should be_instance_of(Integer)
+      stat[:entries].should be_instance_of(Integer)
     end
 
     it 'should return info' do
       info = env.info
-      info[:mapaddr].should be_instance_of(Fixnum)
-      info[:mapsize].should be_instance_of(Fixnum)
-      info[:last_pgno].should be_instance_of(Fixnum)
-      info[:last_txnid].should be_instance_of(Fixnum)
-      info[:maxreaders].should be_instance_of(Fixnum)
-      info[:numreaders].should be_instance_of(Fixnum)
+      info[:mapaddr].should be_instance_of(Integer)
+      info[:mapsize].should be_instance_of(Integer)
+      info[:last_pgno].should be_instance_of(Integer)
+      info[:last_txnid].should be_instance_of(Integer)
+      info[:maxreaders].should be_instance_of(Integer)
+      info[:numreaders].should be_instance_of(Integer)
     end
 
     it 'should set mapsize' do

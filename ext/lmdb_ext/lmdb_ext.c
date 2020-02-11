@@ -548,6 +548,22 @@ static VALUE environment_path(VALUE self) {
         return rb_str_new2(path);
 }
 
+/**
+ * @overload inspect
+ *   Return the inspect
+ *   @return [String] the inspect.
+ */
+static VALUE environment_inspect(VALUE self) {
+        VALUE str;
+        const char* path;
+        str = rb_str_buf_new2("#<LMDB::Environment:");
+        ENVIRONMENT(self, environment);
+        check(mdb_env_get_path(environment->env, &path));
+        rb_str_buf_cat2(str, path);
+        rb_str_buf_cat2(str, ">");
+        return str;
+}
+
 static VALUE environment_set_mapsize(VALUE self, VALUE size) {
         ENVIRONMENT(self, environment);
         check(mdb_env_set_mapsize(environment->env, NUM2LONG(size)));
@@ -1358,6 +1374,7 @@ void Init_lmdb_ext() {
         rb_define_method(cEnvironment, "clear_flags", environment_clear_flags, -1);
         rb_define_method(cEnvironment, "flags", environment_flags, 0);
         rb_define_method(cEnvironment, "path", environment_path, 0);
+        rb_define_method(cEnvironment, "inspect", environment_inspect, 0);
         rb_define_method(cEnvironment, "transaction", environment_transaction, -1);
 
         /**

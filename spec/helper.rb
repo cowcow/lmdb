@@ -7,9 +7,19 @@ TEMP_ROOT = File.join(SPEC_ROOT, 'tmp')
 
 module LMDB::SpecHelper
   def mkpath(name = 'env')
-    path = File.join(TEMP_ROOT, name)
-    FileUtils.mkpath(path)
-    path
+    if( File.exist?('/dev/shm') )
+      root = '/dev/shm/spec/lmdb'
+    else
+      root = TEMP_ROOT
+    end
+    @all_path ||= []
+    @all_path << FileUtils.mkpath(File.join(root, name)).first
+    @all_path.last
+  end
+
+  def rmpath
+    FileUtils.rmtree( @all_path )
+    @all_path.clear
   end
 
   def path
